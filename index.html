@@ -40,7 +40,7 @@
     </div>
 
     <div class="ranking-box">
-        <div class="ranking-title">🏆 WORLD LEADERBOARD</div>
+        <div class="ranking-title">🏆ランキング</div>
         <div id="leaderboard-list"></div>
     </div>
 
@@ -49,7 +49,7 @@
     <script>
         let nickname = localStorage.getItem('nickname');
         if (!nickname) {
-            nickname = prompt('エリートプレイヤー、あなたのニックネームを入力してください:', 'Anonymous');
+            nickname = prompt('あなたのニックネームを入力してください:', 'Anonymous');
             if (!nickname || nickname.trim() === '') nickname = 'Anonymous';
             localStorage.setItem('nickname', nickname);
         }
@@ -97,7 +97,7 @@
             });
         }
 
-        // 修正: Discord Webhook URLをBase64で暗号化（難読化）した文字列
+        // 修正: Discord Webhook URLを暗号化（難読化）した文字列
         // これにより、GitHubのクローラー（Bot）にはただの無意味な文字列に見えるため、自動検知・暴発を防ぎます
         const encryptedUrl = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTUxNDM2NjUyNjQ2MjA5OTYzNi8zQWc0am1WMEd1bVJ4SmN0bVBQak1NYnAwd2lnS3ZtbHRBOEFSSGVWanNQNlBma1NPMWFyZkRxbjZsUUxpSDhody1Q";
         
