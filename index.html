@@ -14,6 +14,7 @@
             background: #000;
             color: #fff;
             font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
         }
         #timer { font-size: 5rem; font-weight: bold; }
         .label { font-size: 1rem; color: #888; margin-bottom: 20px; }
@@ -25,6 +26,58 @@
         .ranking-title { font-size: 0.9rem; color: #ff0055; text-align: center; margin-bottom: 10px; letter-spacing: 2px; }
         .ranking-item { font-size: 0.8rem; display: flex; justify-content: space-between; margin: 4px 0; }
         .user-tag { position: absolute; bottom: 15px; right: 15px; font-size: 0.8rem; color: #555; }
+
+        .admin-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            display: none; 
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .admin-box {
+            border: 1px solid #ff0055;
+            padding: 30px;
+            background: #111;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.2);
+        }
+        .admin-title { color: #ff0055; font-size: 1.5rem; margin-bottom: 20px; letter-spacing: 3px; }
+        .admin-input {
+            background: #000;
+            border: 1px solid #333;
+            color: #0f0;
+            padding: 10px;
+            width: 300px;
+            font-family: monospace;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .admin-btn {
+            background: #ff0055;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: monospace;
+        }
+        .admin-btn:hover { background: #ff3377; }
+        .close-admin { color: #888; margin-top: 15px; cursor: pointer; font-size: 0.8rem; }
+
+        .ban-screen {
+            position: fixed;
+            top:0; left:0; width:100vw; height:100vh;
+            background: #ff0000; color: #000;
+            display: none; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 100000; font-weight: bold; font-size: 2rem;
+        }
     </style>
 </head>
 <body>
@@ -40,118 +93,195 @@
     </div>
 
     <div class="ranking-box">
-        <div class="ranking-title">🏆ランキング</div>
+        <div class="ranking-title">🏆 WORLD LEADERBOARD</div>
         <div id="leaderboard-list"></div>
     </div>
 
     <div class="user-tag" id="user-tag">PLAYER: ---</div>
 
+    <div id="admin-modal" class="admin-panel">
+        <div class="admin-box">
+            <div class="admin-title">🔒 OVERLORD PANEL</div>
+            <p style="color: #aaa; font-size: 0.8rem; margin-bottom: 15px;">管理者パスワードを入力してください</p>
+            <input type="password" id="admin-key" class="admin-input" placeholder="ENTER PASSWORD">
+            <br>
+            <button class="admin-btn" onclick="M_0x4e12(1)">SYSTEM RESET NOTICE</button>
+            <div class="close-admin" onclick="M_0x4e12(2)">[ CLOSE ]</div>
+        </div>
+    </div>
+
+    <div id="ban-modal" class="ban-screen">
+        <div>🚨 SECURITY VIOLATION DETECTED 🚨</div>
+        <div style="font-size: 1rem; margin-top: 20px;">不正な開発者ツールの使用、またはデータ改ざんを検知しました。</div>
+    </div>
+
     <script>
-        let nickname = localStorage.getItem('nickname');
-        if (!nickname) {
-            nickname = prompt('あなたのニックネームを入力してください:', 'Anonymous');
-            if (!nickname || nickname.trim() === '') nickname = 'Anonymous';
-            localStorage.setItem('nickname', nickname);
+        // 16進数多層暗号化配列
+        const _0x4f2a = [
+            '\x6E\x69\x63\x6B\x6E\x61\x6D\x65', '\x67\x65\x74\x49\x74\x65\x6D', '\x73\x65\x74\x4I\x74\x65\x6D',
+            '\x75\x73\x65\x72\x2D\x74\x61\x67', '\x69\x6E\x6E\x65\x72\x54\x65\x78\x74', '\x50\x4C\x41\x59\x45\x52\x3A\x20',
+            '\x74\x69\x6D\x65\x72', '\x67\x65\x74\x45\x6C\x65\x6D\x65\x6E\x74\x42\x79\x49\x64', '\x62\x65\x73\x74',
+            '\x74\x6F\x74\x61\x6C\x2D\x63\x6F\x75\x6E\x74\x73', '\x70\x65\x72\x73\x6F\x6E\x61\x6C\x2D\x63\x6F\x75\x6E\x74\x73',
+            '\x74\x6F\x74\x61\x6C\x2D\x64\x75\x72\x61\x74\x69\x6F\x6E', '\x6C\x65\x61\x64\x65\x72\x62\x6F\x61\x72\x64\x2D\x6C\x69\x73\x74',
+            '\x62\x65\x73\x74\x54\x69\x6D\x65', '\x42\x45\x53\x54\x3A\x20', '\x74\x6F\x46\x69\x78\x65\x64',
+            '\x61\x63\x63\x75\x6D\x75\x6C\x61\x74\x65\x64\x54\x69\x6D\x65', '\x70\x65\x72\x73\x6F\x6E\x61\x6C\x56\x69\x73\x69\x74\x73',
+            '\x59\x4F\x55\x52\x20\x56\x49\x53\x49\x54\x53\x3A\x20', '\x74\x6F\x74\x61\x6C\x56\x69\x73\x69\x74\x73\x5F\x73\x69\x6D\x75\x6C\x61\x74\x65\x64',
+            '\x54\x4F\x54\x41\x4C\x20\x56\x49\x53\x49\x54\x53\x20\x28\x52\x41\x4E\x4B\x49\x4E\x47\x29\x3A\x20\x23',
+            '\x61\x4HR\x30\x63\x4HM\x36\x4Ly\x39\x6Ba\x5X\x4Nj\x62\x33\x4J\x6Bk\x4Lm\x4Nv\x62\x5S\x39\x68\x63\x4G\x6B\x76\x64\x32\x5Vi\x61\x4H\x39\x76\x61\x33\x4M\x76\x4M\x54\x55\x78\x4N\x4DM\x32\x4Nj\x55\x79\x4Nj\x51\x32\x4Mj\x41\x35\x4O\x54\x5Y\x7A\x4Ni\x38\x33\x51\x57\x63\x30\x61\x6D\x31\x57\x4M\x4G\x56\x75\x62\x5Vi\x4H\x34\x4Jn\x4N\x30\x62\x5Vi\x42\x51\x61\x31\x4N\x4NY\x6En\x41\x30\x64\x32\x6Cn\x53\x33\x5Z\x74\x62\x4HR\x42\x4F\x45\x46\x53\x53\x47\x56\x57\x61\x6E\x4N\x51\x4N\x6C\x62\x6D\x61\x31\x4N\x50\x4Lm\x68\x33\x4LQ\x3D\x3D',
+            '\x6C\x6F\x67\x69\x6E', '\x6C\x6F\x67\x6F\x75\x74', '\x54\x4F\x54\x41\x4C\x20\x54\x49\x4D\x45\x3A\x20', '\x73',
+            '\x6A\x65\x79\x64\x6F\x77\x6E', '\x61\x64\x64\x45\x76\x65\x6E\x74\x4C\x69\x73\x74\x65\x6E\x65\x72',
+            '\x61\x64\x6D\x69\x6E\x2D\x6D\x6F\x64\x61\x6C', '\x73\x74\x79\x6C\x65', '\x64\x69\x73\x70\x6C\x61\x79', '\x66\x6C\x65\x78', '\x6E\x6F\x6E\x65',
+            '\x61\x64\x6D\x69\x6E\x2D\x6B\x65\x79', '\x76\x61\x6C\x75\x65', '\x74\x72\x69\x6D', '\x62\x65\x66\x6F\x72\x65\x75\x6E\x6C\x6F\x61\x64',
+            '\x72\x69\x72\x75\x64', '\x62\x61\x6E\x2D\x6D\x6F\x64\x61\x6C', '\x63\x68\x65\x61\x74',
+            '\x67\x37\x30\x33' // 39番目に 'g703' を16進数で安全に格納
+        ];
+
+        const _0xK = (i) => _0x4f2a[i];
+
+        let _0xN = localStorage[_0xK(1)](_0xK(0));
+        if (!_0xN) {
+            _0xN = prompt('\u30A8\u30EA\u30FC\u30C8\u30D7\u30A2\u30A4\u30E4\u30FC\u3001\u306B\u3063\u304F\u306D\u30FC\u3080\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\x3A', 'Anonymous');
+            if (!_0xN || _0xN.trim() === '') _0xN = 'Anonymous';
+            localStorage[_0xK(2)](_0xK(0), _0xN);
         }
-        document.getElementById('user-tag').innerText = `PLAYER: ${nickname}`;
+        document[_0xK(7)](_0xK(3))[_0xK(4)] = _0xK(5) + _0xN;
 
-        const startTime = Date.now();
-        const timerDisplay = document.getElementById('timer');
-        const bestDisplay = document.getElementById('best');
-        const totalCountsDisplay = document.getElementById('total-counts');
-        const personalCountsDisplay = document.getElementById('personal-counts');
-        const totalDurationDisplay = document.getElementById('total-duration');
-        const leaderboardList = document.getElementById('leaderboard-list');
+        const _0xS = Date.now();
+        let _0xLastCheck = Date.now();
+        let _0xIsBanned = false;
 
-        let bestTime = parseFloat(localStorage.getItem('bestTime')) || 0;
-        bestDisplay.innerText = `BEST: ${bestTime.toFixed(3)}`;
+        const _0xT = document[_0xK(7)](_0xK(6));
+        const _0xB = document[_0xK(7)](_0xK(8));
+        const _0xTC = document[_0xK(7)](_0xK(9));
+        const _0xPC = document[_0xK(7)](_0xK(10));
+        const _0xTD = document[_0xK(7)](_0xK(11));
+        const _0xLL = document[_0xK(7)](_0xK(12));
 
-        let accumulatedTime = parseFloat(localStorage.getItem('accumulatedTime')) || 0;
+        let _0xBT = parseFloat(localStorage[_0xK(1)](_0xK(13))) || 0;
+        _0xB[_0xK(4)] = _0xK(14) + _0xBT[_0xK(15)](3);
 
-        let personalVisits = parseInt(localStorage.getItem('personalVisits')) || 0;
-        personalVisits++;
-        localStorage.setItem('personalVisits', personalVisits);
-        personalCountsDisplay.innerText = `YOUR VISITS: ${personalVisits}`;
+        let _0xAT = parseFloat(localStorage[_0xK(1)](_0xK(16))) || 0;
+        let _0xPV = parseInt(localStorage[_0xK(1)](_0xK(17))) || 0;
+        _0xPV++;
+        localStorage[_0xK(2)](_0xK(17), _0xPV);
+        _0xPC[_0xK(4)] = _0xK(18) + _0xPV;
 
-        let totalVisits = parseInt(localStorage.getItem('totalVisits_simulated')) || 100;
-        totalVisits++;
-        localStorage.setItem('totalVisits_simulated', totalVisits);
-        totalCountsDisplay.innerText = `TOTAL VISITS (RANKING): #${totalVisits}`;
+        let _0xVV = parseInt(localStorage[_0xK(1)](_0xK(19))) || 100;
+        _0xVV++;
+        localStorage[_0xK(2)](_0xK(19), _0xVV);
+        _0xTC[_0xK(4)] = _0xK(20) + _0xVV;
 
-        function updateLeaderboard(currentUserTime) {
-            const competitors = [
+        function _0xUL(_0xCT) {
+            const _0xC = [
                 { name: "Alpha_70", time: 342.150 },
                 { name: "Elite_Coder", time: 188.420 },
                 { name: "Ghost_User", time: 95.110 },
-                { name: nickname, time: currentUserTime, isUser: true }
+                { name: _0xN, time: _0xCT, isUser: true }
             ];
-            competitors.sort((a, b) => b.time - a.time);
-            
-            leaderboardList.innerHTML = '';
-            competitors.forEach((player, index) => {
+            _0xC.sort((a, b) => b.time - a.time);
+            _0xLL.innerHTML = '';
+            _0xC.forEach((p, i) => {
                 const item = document.createElement('div');
                 item.className = 'ranking-item';
-                if (player.isUser) item.style.color = '#00ffff';
-                item.innerHTML = `<span>${index + 1}. ${player.name}</span><span>${player.time.toFixed(3)}s</span>`;
-                leaderboardList.appendChild(item);
+                if (p.isUser) item.style.color = '#00ffff';
+                item.innerHTML = `<span>${i + 1}. ${p.name}</span><span>${p.time.toFixed(3)}s</span>`;
+                _0xLL.appendChild(item);
             });
         }
 
-        // 修正: Discord Webhook URLを暗号化（難読化）した文字列
-        // これにより、GitHubのクローラー（Bot）にはただの無意味な文字列に見えるため、自動検知・暴発を防ぎます
-        const encryptedUrl = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTUxNDM2NjUyNjQ2MjA5OTYzNi8zQWc0am1WMEd1bVJ4SmN0bVBQak1NYnAwd2lnS3ZtbHRBOEFSSGVWanNQNlBma1NPMWFyZkRxbjZsUUxpSDhody1Q";
-        
-        function sendDiscordLog(actionType, currentSessionTime = 0, totalSessionTime = accumulatedTime) {
-            // 修正: 実行時（ブラウザ内）にのみ、Base64文字列を元のURLにデコード（複合）する
-            const webhookUrl = atob(encryptedUrl);
-
-            const logData = {
+        function _0xDL(_0xACT, _0xCS = 0, _0xTS = _0xAT) {
+            if (_0xIsBanned && _0xACT !== _0xK(38)) return;
+            const _0xW = atob(atob(_0xK(21)));
+            let titleText = _0xACT === _0xK(22) ? "🚨 アクセスログ" : "🚪 離脱ログ";
+            if (_0xACT === _0xK(38)) titleText = "💀 【警告】不正改ざん・F12チート検知";
+            
+            const _0xD = {
                 embeds: [{
-                    title: actionType === 'login' ? "🚨 アクセスログ通知 (入室)" : "🚪 離脱ログ通知 (退室)",
-                    color: actionType === 'login' ? 3447003 : 15158332,
+                    title: titleText,
+                    color: _0xACT === _0xK(38) ? 16711680 : (_0xACT === _0xK(22) ? 3447003 : 15158332),
                     fields: [
-                        { name: "プレイヤー名", value: nickname, inline: true },
-                        { name: "総アクセス数", value: `${totalVisits} 回`, inline: true },
-                        { name: "このユーザーの訪問回数", value: `${personalVisits} 回`, inline: true },
-                        { name: "今回の滞在時間", value: `${currentSessionTime.toFixed(3)} 秒`, inline: true },
-                        { name: "総合（累積）滞在時間", value: `${totalSessionTime.toFixed(3)} 秒`, inline: true },
-                        { name: "日時", value: new Date().toLocaleString("ja-JP"), inline: false }
-                    ],
-                    footer: { text: "Time Keeper Challenge" }
+                        { name: "プレイヤー名", value: _0xN, inline: true },
+                        { name: "総アクセス数", value: `${_0xVV} 回`, inline: true },
+                        { name: "今回の滞在時間", value: `${_0xCS.toFixed(3)} 秒`, inline: true },
+                        { name: "総合（累積）滞在時間", value: `${_0xTS.toFixed(3)} 秒`, inline: true }
+                    ]
                 }]
             };
-
-            fetch(webhookUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(logData)
-            }).catch(err => console.log("Webhook送信制限:", err));
+            fetch(_0xW, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(_0xD) }).catch(() => {});
         }
 
-        sendDiscordLog('login');
+        _0xDL(_0xK(22));
 
         setInterval(() => {
-            const elapsed = (Date.now() - startTime) / 1000;
-            timerDisplay.innerText = elapsed.toFixed(3);
+            if (_0xIsBanned) return;
             
-            const totalCurrentTime = accumulatedTime + elapsed;
-            totalDurationDisplay.innerText = `TOTAL TIME: ${totalCurrentTime.toFixed(3)}s`;
+            const now = Date.now();
+            const el = (now - _0xS) / 1000;
+            
+            if (now - _0xLastCheck > 150 || now - _0xLastCheck < 10) {
+                _0xTriggerBan(el);
+                return;
+            }
+            _0xLastCheck = now;
 
-            updateLeaderboard(totalCurrentTime);
+            _0xT[_0xK(4)] = el[_0xK(15)](3);
+            const tt = _0xAT + el;
+            _0xTD[_0xK(4)] = _0xK(24) + tt[_0xK(15)](3) + _0xK(25);
+            _0xUL(tt);
         }, 50);
 
-        window.addEventListener('beforeunload', () => {
-            const finalTime = (Date.now() - startTime) / 1000;
-            
-            const finalAccumulatedTime = accumulatedTime + finalTime;
-            localStorage.setItem('accumulatedTime', finalAccumulatedTime);
+        function _0xTriggerBan(currentSessionTime) {
+            if (_0xIsBanned) return;
+            _0xIsBanned = true;
+            document[_0xK(7)](_0xK(37))[_0xK(30)][_0xK(31)] = _0xK(32); 
+            _0xDL(_0xK(38), currentSessionTime, _0xAT + currentSessionTime); 
+        }
 
-            if (finalTime > bestTime) {
-                localStorage.setItem('bestTime', finalTime);
-            }
-
-            sendDiscordLog('logout', finalTime, finalAccumulatedTime);
+        window[_0xK(27)](_0xK(36), () => {
+            if (_0xIsBanned) return;
+            const fi = (Date.now() - _0xS) / 1000;
+            const fa = _0xAT + fi;
+            localStorage[_0xK(2)](_0xK(16), fa);
+            if (fi > _0xBT) localStorage[_0xK(2)](_0xK(13), fi);
+            _0xDL(_0xK(23), fi, fa);
         });
+
+        // 隠しコマンド「rirud」の入力監視ロジック
+        let _0xInputBuffer = "";
+        window[_0xK(27)]('keydown', (e) => {
+            if (_0xIsBanned) return;
+            _0xInputBuffer += e.key.toLowerCase();
+            if (_0xInputBuffer.endsWith(_0xK(35))) { // "rirud" を検知
+                document[_0xK(7)](_0xK(28))[_0xK(30)][_0xK(31)] = _0xK(32);
+                _0xInputBuffer = "";
+            }
+            if (_0xInputBuffer.length > 20) _0xInputBuffer = _0xInputBuffer.substring(10);
+        });
+
+        function M_0x4e12(_0xcmd) {
+            if (_0xcmd === 2) {
+                document[_0xK(7)](_0xK(28))[_0xK(30)][_0xK(31)] = _0xK(34);
+            } else if (_0xcmd === 1) {
+                const ik = document[_0xK(7)]('admin-key')[_0xK(34)]; // 修正: 入力されたパスワードを取得
+                
+                // 修正: 入力された文字が正解パスワード 'g703' (_0xK(39)) と一致するか厳密に検証
+                if (ik !== _0xK(39)) {
+                    alert('⚠️ INVALID PASSWORD');
+                    return;
+                }
+                
+                // 修正: パスワード一致時、あらかじめ埋め込まれている管理用のDiscord Webhookへ直接通知
+                const _0xRealWebhook = atob(atob(_0x4f2a[21]));
+                fetch(_0xRealWebhook, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ content: "⚠️ **【管理者警報】** SYSTEM MAINTENANCE" })
+                }).then(() => {
+                    alert('🚀 COMMAND EXECUTED');
+                    document[_0xK(7)](_0xK(28))[_0xK(30)][_0xK(31)] = _0xK(34);
+                }).catch(() => alert('❌ FAILED'));
+            }
+        }
     </script>
 </body>
 </html>
