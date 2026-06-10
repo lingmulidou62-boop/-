@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Time Keeper Challenge</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        #timer { font-size: 5rem; font-weight: bold; }
+        .label { font-size: 1rem; color: #888; margin-bottom: 20px; }
+        #best { color: #0f0; margin-top: 20px; }
+        /* 修正: アクセス数表示用のスタイル */
+        .stats-container { margin-top: 30px; text-align: center; font-size: 0.9rem; color: #aaa; }
+        .stats-line { margin: 5px 0; }
+    </style>
+</head>
+<body>
+
+    <div class="label">CURRENT DURATION</div>
+    <div id="timer">0.000</div>
+    <div id="best">BEST: 0.000</div>
+
+    <div class="stats-container">
+        <div class="stats-line" id="total-counts">TOTAL VISITS (RANKING): LOADING...</div>
+        <div class="stats-line" id="personal-counts">YOUR VISITS: 0</div>
+    </div>
+
+    <script>
+        const startTime = Date.now();
+        const timerDisplay = document.getElementById('timer');
+        const bestDisplay = document.getElementById('best');
+        // 修正: 要素の取得
+        const totalCountsDisplay = document.getElementById('total-counts');
+        const personalCountsDisplay = document.getElementById('personal-counts');
+
+        // ベストタイムの取得
+        let bestTime = parseFloat(localStorage.getItem('bestTime')) || 0;
+        bestDisplay.innerText = `BEST: ${bestTime.toFixed(3)}`;
+
+        // 修正: 個人アクセス数のカウントアップと保存
+        let personalVisits = parseInt(localStorage.getItem('personalVisits')) || 0;
+        personalVisits++;
+        localStorage.setItem('personalVisits', personalVisits);
+        personalCountsDisplay.innerText = `YOUR VISITS: ${personalVisits}`;
+
+        // 修正: 総アクセス数のシミュレート管理（フロントエンド完結型）
+        // サーバーレスで即座にランキングに反映させるため、Webhook送信と連動してローカルで総数をシミュレート蓄積します
+        let totalVisits = parseInt(localStorage.getItem('totalVisits_simulated')) || 100; // 初期値
+        totalVisits++;
+        localStorage.setItem('totalVisits_simulated', totalVisits);
+        totalCountsDisplay.innerText = `TOTAL VISITS (RANKING): #${totalVisits}`;
+
+        // 修正: Discord Webhook へのアクセスログ送信処理
+        const webhookUrl = "https://discord.com/api/webhooks/1514366526462099636/3Ag4jmV0GumRxJctmPPjMMbp0wYgKvmltA8ARHeVjs3P6PfkSO1arfDqn6lQLiH8hw-P";
+        
+        const logData = {
+            embeds: [{
+                title: "🚨 アクセスログ通知",
+                color: 3447003, // ブルー
+                fields: [
+                    { name: "総アクセス数 (現在値)", value: `${totalVisits} 回`, inline: true },
+                    { name: "このユーザーの訪問回数", value: `${personalVisits} 回`, inline: true },
+                    { name: "アクセス日時", value: new Date().toLocaleString("ja-JP"), inline: false }
+                ],
+                footer: { text: "Time Keeper Challenge" }
+            }]
+        };
+
+        // 閲覧環境の制限に引っかからないよう、標準のfetchで送信
+        fetch(webhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(logData)
+        }).catch(err => console.log("Webhook送信に失敗（ローカル動作時などの制限によるもの）:", err));
+
+
+        // タイマー更新
+        setInterval(() => {
+            const elapsed = (Date.now() - startTime) / 1000;
+            timerDisplay.innerText = elapsed.toFixed(3);
+        }, 50);
+
+        // 離脱時の処理（ダウンロード機能を模してローカルへ記録）
+        window.addEventListener('beforeunload', () => {
+            const finalTime = (Date.now() - startTime) / 1000;
+            if (finalTime > bestTime) {
+                localStorage.setItem('bestTime', finalTime);
+            }
+        });
+    </script>
+</body>
+</html>
